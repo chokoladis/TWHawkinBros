@@ -55,7 +55,7 @@ class Rainfall extends CBitrixComponent{
 
 		if ($coordinate){
 
-			$queryApi = Helpers::getPrecipitation($coordinate, 2);
+			$queryApi = Helpers::getPrecipitation($coordinate, 2, 1);
 
 			if (!isset($queryApi['error'])){
 
@@ -81,14 +81,6 @@ class Rainfall extends CBitrixComponent{
 		}
 
 		$this->arResult = $result;
-
-		$this->setResultCacheKeys(array(
-			"RESULT",
-			"error",
-			"reason",
-			"TITLE_DATE",
-			"CITY_NAME"
-		));
 		
 		return $result;
 	}
@@ -206,8 +198,7 @@ class Rainfall extends CBitrixComponent{
 		} else {
 			$res = [ 'success' => false];
 		}
-		// echo '<br>fetch';
-		// var_dump($query->Fetch(), $res);
+
 		return $res;
 	}
 

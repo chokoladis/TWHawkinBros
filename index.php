@@ -1,8 +1,6 @@
 <? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); 
 $APPLICATION->SetTitle("1С-Битрикс: Управление сайтом");
 
-// $USER->Authorize(1, true);
-
 $APPLICATION->IncludeComponent(
 	"custom:weather.rainfall", 
 	".default", 
