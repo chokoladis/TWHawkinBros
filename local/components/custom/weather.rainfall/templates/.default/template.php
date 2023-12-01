@@ -12,20 +12,17 @@
 /** @var CBitrixComponent $component */
 $this->setFrameMode(true);
 
+$arElem = $arResult['RESULT'];
+
 if ($arResult['error'] !== true){
 	?>
-	<table>
-		<tr>
-			<td><?=$arResult['CITY_NAME']?></td>
+	<table border=1 width='30%' align="center">
+		<tr rowspan="2" >
+			<td colspan='2'><?=$arResult['CITY_NAME']?><br><?=$arResult['TITLE_DATE']?></td>
 		</tr>
 		<?php
-			foreach ($arResult['RESULT'] as $value) {
-				?>
-				<tr>
-					<td><?=$value['time']?></td>
-					<td><?=$value['precipitation']?></td>
-				</tr>
-				<?
+			if (!empty($arElem) && $arElem['PREVIEW_TEXT']){
+				echo $arElem['PREVIEW_TEXT'];
 			}
 		?>
 	</table>
@@ -34,6 +31,9 @@ if ($arResult['error'] !== true){
 
 }
 
-
-
 ?>
+<style>
+	table *{
+		text-align: center;
+	}
+</style>
