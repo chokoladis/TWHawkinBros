@@ -69,6 +69,7 @@ class Rainfall extends CBitrixComponent{
 
 				$arElem = self::addElements($result['CITY_NAME'],$arCompilate);
 				$currDateDay = date("d.m.Y");
+				// $currDateDay = '03.12.2023'; // для теста
 
 				$result['RESULT'] = $arElem;
 				$result['TITLE_DATE'] = $currDateDay;
@@ -93,6 +94,7 @@ class Rainfall extends CBitrixComponent{
 		$arElems = $needElem = [];
 
 		$currDateDay = date("Y_m_d");
+		// $currDateDay = '2023_12_03'; // для теста
 
 		foreach($arApiData as $inx => $arTemp){
 			
@@ -193,7 +195,7 @@ class Rainfall extends CBitrixComponent{
 		$arSelect = ["ID", "IBLOCK_ID", 'NAME', 'PREVIEW_TEXT'];
 		$arFilter = ["IBLOCK_ID"=> $this->arParams['IBLOCK_ID'], "NAME" => $dateName, "ACTIVE"=>"Y", 'IBLOCK_SECTION_ID' => $sectionId];
 		$query = CIBlockElement::GetList([], $arFilter, false, ['nTopCount' => 1], $arSelect);
-		if ($arItem = $query->Fetch() && !empty($arItem)) {
+		if ($arItem = $query->Fetch()) {
 			$res = $arItem;
 		} else {
 			$res = [ 'success' => false];

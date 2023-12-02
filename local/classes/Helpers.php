@@ -1,6 +1,6 @@
 <?php
 
-// use Bitrix\Main\Loader;
+use Bitrix\Main\Loader;
 // use Bitrix\Sale;
 use Bitrix\Main\Data\Cache;
 
@@ -17,7 +17,7 @@ class Helpers
         $cities = self::getCities();
 
         foreach($cities as $city){
-            $data = self::getPrecipitation($city['PROPERTY_VALUE_COORDINATE'], 2, 0);
+            $data = self::getPrecipitation($city['PROPERTY_COORDINATE_VALUE'], 2, 0);
 
             $arCompilate = [];
             foreach ($data['hourly']['time'] as $inx => $value) {
@@ -29,7 +29,6 @@ class Helpers
 
             $arElem = self::addElements($city['NAME'],$arCompilate);
         }
-
     }
 
     public static function getPrecipitation(string $coordinate, int $days = 1, $f_useCache = 1){
@@ -104,7 +103,7 @@ class Helpers
         return $arResult;
     }
 
-	public function addElements($cityName, $arApiData){
+	public static function addElements($cityName, $arApiData){
 		
 		$iblockID = CIBlockTools::GetIBlockId('precipitation');
 
@@ -136,7 +135,7 @@ class Helpers
 			if ($arSection = $rsSections->Fetch())
 			{
 				$sectionId = $arSection['ID'];
-				$findElem = $this->isElemOnSection($dateName, $sectionId);
+				$findElem = self::isElemOnSection($dateName, $sectionId);
 				if (isset($findElem['success']) && !$findElem['success'])
 					$f_createElem = true;
 
@@ -160,7 +159,7 @@ class Helpers
 				continue;
 
 			if ($f_createElem)
-				$findElem = $this->addElement($dateName, $arElem, $sectionId);
+				$findElem = self::addElement($dateName, $arElem, $sectionId);
 
 			if (!isset($findElem['success']) && $currDateDay == $dateName)
 				$needElem = $findElem;
@@ -170,7 +169,7 @@ class Helpers
 		return $needElem;
 	}
 
-	public function addElement($dateName, $arElem, $sectionId){
+	public static function addElement($dateName, $arElem, $sectionId){
 
 		$el = new CIBlockElement;
 		$html = '';
@@ -208,14 +207,14 @@ class Helpers
 		return $arLoadProductArray;
 	}
 
-	public function isElemOnSection($dateName, $sectionId){
+	public static function isElemOnSection($dateName, $sectionId){
 
         $iblockID = CIBlockTools::GetIBlockId('precipitation');
 
 		$arSelect = ["ID", "IBLOCK_ID", 'NAME', 'PREVIEW_TEXT'];
 		$arFilter = ["IBLOCK_ID"=> $iblockID, "NAME" => $dateName, "ACTIVE"=>"Y", 'IBLOCK_SECTION_ID' => $sectionId];
-		$query = CIBlockElement::GetList([], $arFilter, false, ['nTopCount' => 1], $arSelect);
-		if ($arItem = $query->Fetch() && !empty($arItem)) {
+		$query = CIBlockElement::GetList([], $arFilter, false, false, $arSelect);
+		if ($arItem = $query->Fetch()) {
 			$res = $arItem;
 		} else {
 			$res = [ 'success' => false];
