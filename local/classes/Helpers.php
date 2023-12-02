@@ -29,6 +29,8 @@ class Helpers
 
             $arElem = self::addElements($city['NAME'],$arCompilate);
         }
+
+		return "Helpers::initPrecipitation();";
     }
 
     public static function getDataFromApi(string $coordinate, int $days = 1){
