@@ -43,42 +43,57 @@ class Rainfall extends CBitrixComponent{
 			
 		Loader::includeModule("iblock");
 
-		$arSelect = ["ID", "IBLOCK_ID", 'NAME', "PROPERTY_COORDINATE"];
-		$arFilter = ["IBLOCK_ID"=> $this->arParams['IBLOCK_ID_CITY'], "ID" => $this->arParams['CITY'], "ACTIVE"=>"Y"];
-		$query = CIBlockElement::GetList([], $arFilter, false, ['nTopCount' => 1], $arSelect);
-		if ($arItem = $query->Fetch()) {
-			$resQuery = $arItem;
-			$coordinate = $resQuery['PROPERTY_COORDINATE_VALUE'];
+		$cache = Cache::createInstance();
+		
+		$cachePath = 'rainfall';
+		$cacheTtl = $this->arParams['CACHE_TIME']; 
+		$cacheKey = 'city_'.$this->arParams['CITY']; 
+		
+		if ($cache->initCache($cacheTtl, $cacheKey))
+		{
+			$result = $cache->getVars(); 
 		}
-
-		$result['CITY_NAME'] = $resQuery['NAME'];
-
-		if ($coordinate){
-
-			$queryApi = Helpers::getPrecipitation($coordinate, 2, 1);
-
-			if (!isset($queryApi['error'])){
-
-				$arCompilate = [];
-				foreach ($queryApi['hourly']['time'] as $inx => $value) {
-					$arCompilate[$inx]['time'] = $value;
-				}
-				foreach ($queryApi['hourly']['precipitation'] as $inx => $value) {
-					$arCompilate[$inx]['precipitation'] = $value;
-				}
-
-				$arElem = self::addElements($result['CITY_NAME'],$arCompilate);
-				$currDateDay = date("d.m.Y");
-				// $currDateDay = '03.12.2023'; // для теста
-
-				$result['RESULT'] = $arElem;
-				$result['TITLE_DATE'] = $currDateDay;
-			} else {
-				$result = $queryApi;
+		elseif ($cache->startDataCache())
+		{
+			$arSelect = ["ID", "IBLOCK_ID", 'NAME', "PROPERTY_COORDINATE"];
+			$arFilter = ["IBLOCK_ID"=> $this->arParams['IBLOCK_ID_CITY'], "ID" => $this->arParams['CITY'], "ACTIVE"=>"Y"];
+			$query = CIBlockElement::GetList([], $arFilter, false, ['nTopCount' => 1], $arSelect);
+			if ($arItem = $query->Fetch()) {
+				$resQuery = $arItem;
+				$coordinate = $resQuery['PROPERTY_COORDINATE_VALUE'];
 			}
 
-		} else{
-			$result = ['error' => true, 'reason' => 'Не установлены координаты'];
+			$result['CITY_NAME'] = $resQuery['NAME'];
+
+			if ($coordinate){
+
+				$queryApi = Helpers::getDataFromApi($coordinate, 2);
+
+				if (!isset($queryApi['error'])){
+
+					$arCompilate = [];
+					foreach ($queryApi['hourly']['time'] as $inx => $value) {
+						$arCompilate[$inx]['time'] = $value;
+					}
+					foreach ($queryApi['hourly']['precipitation'] as $inx => $value) {
+						$arCompilate[$inx]['precipitation'] = $value;
+					}
+
+					$arElem = self::addElements($result['CITY_NAME'],$arCompilate);
+					$currDateDay = date("d.m.Y");
+					// $currDateDay = '03.12.2023'; // для теста
+
+					$result['RESULT'] = $arElem;
+					$result['TITLE_DATE'] = $currDateDay;
+				} else {
+					$result = $queryApi;
+				}
+
+			} else{
+				$result = ['error' => true, 'reason' => 'Не установлены координаты'];
+			}
+
+			$cache->endDataCache($result);
 		}
 
 		$this->arResult = $result;
@@ -123,8 +138,7 @@ class Rainfall extends CBitrixComponent{
 				$findElem = $this->isElemOnSection($dateName, $sectionId);
 				if (isset($findElem['success']) && !$findElem['success'])
 					$f_createElem = true;
-
-				// var_dump('find-',$findElem);
+				
 			} else {
 				$bs = new CIBlockSection;
 				$arFields = [

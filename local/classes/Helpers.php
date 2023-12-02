@@ -17,7 +17,7 @@ class Helpers
         $cities = self::getCities();
 
         foreach($cities as $city){
-            $data = self::getPrecipitation($city['PROPERTY_COORDINATE_VALUE'], 2, 0);
+			$data = self::getDataFromApi($city['PROPERTY_COORDINATE_VALUE'], 2);
 
             $arCompilate = [];
             foreach ($data['hourly']['time'] as $inx => $value) {
@@ -29,37 +29,6 @@ class Helpers
 
             $arElem = self::addElements($city['NAME'],$arCompilate);
         }
-    }
-
-    public static function getPrecipitation(string $coordinate, int $days = 1, $f_useCache = 1){
-
-        list( $lat, $long) = explode(',', $coordinate);
-
-        $lat = (string)$lat;
-        $long = (string)$long;
-
-        if ($f_useCache){
-
-            $cache = Cache::createInstance(); // Служба кеширования
-            
-            $cachePath = 'rainfall';
-            $cacheTtl = 360000;
-            $cacheKey = $lat.'_'.$long;
-            
-            if ($cache->initCache($cacheTtl, $cacheKey, $cachePath))
-            {
-                $result = $cache->getVars();
-            }
-            elseif ($cache->startDataCache())
-            {
-                $result = self::getDataFromApi($coordinate, $days);
-                $cache->endDataCache($result);
-            }
-        } else {
-            $result = self::getDataFromApi($coordinate, $days);
-        }
-
-        return $result;
     }
 
     public static function getDataFromApi(string $coordinate, int $days = 1){
@@ -139,7 +108,6 @@ class Helpers
 				if (isset($findElem['success']) && !$findElem['success'])
 					$f_createElem = true;
 
-				// var_dump('find-',$findElem);
 			} else {
 				$bs = new CIBlockSection;
 				$arFields = [
@@ -187,7 +155,6 @@ class Helpers
 		}
 
 		$arLoadProductArray = Array(
-			// "MODIFIED_BY"    => $USER->GetID(),
 			"IBLOCK_SECTION_ID" => $sectionId,
 			"IBLOCK_ID"      => $iblockID,
 			"NAME"           => $dateName,
